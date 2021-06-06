@@ -32,7 +32,8 @@ func main() {
 }
 ```
 
-Similarly, for commands which have response data, you can access a structured `NGResponse`. This example calls `CMD_HF_ISO14443A_READER`.
+Similarly, for commands which have response data, you can access a structured `NGResponse`. This example calls `CMD_HF_ISO14443A_READER`. The Proxmark also emits unsolicited responses for a variety of reasons, i.e. debug logging. You will have to handle (or discard) these unrelated responses yourself.
+
 ```go
 import pm3lib "github.com/iangcarroll/pm3lib/pkg"
 
@@ -42,11 +43,18 @@ func main() {
 
 	command := pm3lib.NGCommand{
 		Command: []byte{0x85, 0x03},
-		NG:      false,
+		NG:      true,
 		Data:    []byte{0x03, 0x00, 0x00},
 	}
 
-	res, err := client.SendNGCommand(&command, true)
-	log.Println(res.String())
+	err = client.SendNGCommand(&command)
+	check(err)
+
+	for {
+		res, err := client.ReceiveNGResponse()
+		check(err)
+		
+		log.Println(res.String())
+	}
 }
 ```

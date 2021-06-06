@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 
@@ -31,11 +32,22 @@ func main() {
 	check(err)
 
 	command := pm3lib.NGCommand{
-		Command: []byte{0x85, 0x03},
-		NG:      false,
-		Data:    []byte{0x03, 0x00, 0x00},
+		Command: []byte{0xAD, 0xDE},
+		NG:      true,
+		Data:    []byte{},
 	}
 
-	res, err := client.SendNGCommand(&command, true)
-	log.Println(res.String())
+	err = client.SendNGCommand(&command)
+	log.Println(err)
+
+	for {
+		res, err := client.ReceiveNGResponse()
+		check(err)
+
+		log.Println(res.String())
+
+		if bytes.Compare(res.Command, []byte{0x00, 0x01}) == 0 {
+			log.Println("DEBUG LOG!", string(res.Command[2:]))
+		}
+	}
 }

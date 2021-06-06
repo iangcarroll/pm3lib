@@ -9,6 +9,5 @@ var (
 )
 
 func (c *Client) DropField() error {
-	_, err := c.SendNGCommand(&dropFieldCommand, false)
-	return err
+	return c.SendNGCommand(&dropFieldCommand)
 }
