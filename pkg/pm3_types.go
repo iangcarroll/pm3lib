@@ -15,7 +15,7 @@ var (
 	clientMagicChecksum = []byte{0x61, 0x33}
 	deviceMagicChecksum = []byte{0x62, 0x33}
 
-	minDeviceResponseSize = 8
+	minDeviceResponseSize = 12
 )
 
 type NGCommand struct {
@@ -89,6 +89,9 @@ func (r *NGResponse) load(res []byte) error {
 
 	// Set the data length.
 	r.DataLen = binary.LittleEndian.Uint16(res[4:6])
+	if (r.DataLen + uint16(minDeviceResponseSize)) != uint16(len(res)) {
+		return errors.New("Data length does not align with the response length")
+	}
 
 	// Set the status.
 	r.Status = int16(binary.LittleEndian.Uint16(res[6:8]))
