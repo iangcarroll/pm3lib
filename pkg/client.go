@@ -1,6 +1,7 @@
 package pm3lib
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -17,7 +18,7 @@ const (
 	responseBufferLength = 1024
 )
 
-func (c *Client) SendNGCommand(n *NGCommand, hasResponse bool) ([]byte, error) {
+func (c *Client) SendNGCommand(n *NGCommand, hasResponse bool) (*NGResponse, error) {
 	serialized, err := n.serialize()
 	if err != nil {
 		return nil, err
@@ -27,23 +28,23 @@ func (c *Client) SendNGCommand(n *NGCommand, hasResponse bool) ([]byte, error) {
 }
 
 // Sends `payload` to the device and checks for a response.
-func (c *Client) transmit(payload []byte, hasResponse bool) ([]byte, error) {
+func (c *Client) transmit(payload []byte, hasResponse bool) (*NGResponse, error) {
 	// Write the payload to the serial console.
 	n, err := c.port.Write(payload)
 
 	// Check if the write failed.
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	// Check if we underwrote.
 	if len(payload) != n {
-		return []byte{}, fmt.Errorf("tried to write %d bytes but only wrote %d", len(payload), n)
+		return nil, fmt.Errorf("tried to write %d bytes but only wrote %d", len(payload), n)
 	}
 
 	// If the command has no response, we're done.
 	if !hasResponse {
-		return []byte{}, nil
+		return nil, nil
 	}
 
 	// Allocate a buffer for the response and try to read.
@@ -52,14 +53,15 @@ func (c *Client) transmit(payload []byte, hasResponse bool) ([]byte, error) {
 	// Try to read out the bytes (blocking).
 	readBytes, err := c.port.Read(resBuffer)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
-	// If we have response bytes, return them.
+	// If we have a response, return it.
 	if readBytes > 0 {
-		return resBuffer[:readBytes], nil
+		response := new(NGResponse)
+		return response, response.load(resBuffer[:readBytes])
 	}
 
 	// Return an empty response.
-	return []byte{}, nil
+	return nil, errors.New("no data from read")
 }

@@ -31,3 +31,22 @@ func main() {
 	client.SendNGCommand(&command, false)
 }
 ```
+
+Similarly, for commands which have response data, you can access a structured `NGResponse`. This example calls `CMD_HF_ISO14443A_READER`.
+```go
+import pm3lib "github.com/iangcarroll/pm3lib/pkg"
+
+func main() {
+	client, err := pm3lib.Connect(devicePath)
+	check(err)
+
+	command := pm3lib.NGCommand{
+		Command: []byte{0x85, 0x03},
+		NG:      false,
+		Data:    []byte{0x03, 0x00, 0x00},
+	}
+
+	res, err := client.SendNGCommand(&command, true)
+	log.Println(res.String())
+}
+```

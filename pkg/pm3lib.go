@@ -1,6 +1,8 @@
 package pm3lib
 
 import (
+	"fmt"
+
 	"go.bug.st/serial"
 )
 
@@ -15,6 +17,15 @@ func check(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// Returns a []byte as a hex string; []byte{0xff, 0xaa} = "ffaa".
+func asHex(in []byte) (out string) {
+	for _, byt := range in {
+		out += fmt.Sprintf("%02x ", byt)
+	}
+
+	return out
 }
 
 func Connect(path string) (*Client, error) {

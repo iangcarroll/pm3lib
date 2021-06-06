@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	pm3lib "github.com/iangcarroll/pm3lib/pkg"
 )
@@ -30,9 +31,11 @@ func main() {
 	check(err)
 
 	command := pm3lib.NGCommand{
-		Command: []byte{0x30, 0x04},
-		NG:      true,
-		Data:    []byte{},
+		Command: []byte{0x85, 0x03},
+		NG:      false,
+		Data:    []byte{0x03, 0x00, 0x00},
 	}
-	client.SendNGCommand(&command, false)
+
+	res, err := client.SendNGCommand(&command, true)
+	log.Println(res.String())
 }
